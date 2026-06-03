@@ -32,3 +32,15 @@ target_link_libraries(configuration-tests
 )
 
 add_test(NAME configuration COMMAND configuration-tests)
+
+qt_add_executable(simulated-image-source-tests
+    simulated_image_source_test.cpp
+)
+
+target_link_libraries(simulated-image-source-tests
+    PRIVATE
+        workpiece-vision
+        Qt6::Test
+)
+
+add_test(NAME simulated-image-source COMMAND simulated-image-source-tests)
