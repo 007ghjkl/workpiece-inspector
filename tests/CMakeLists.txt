@@ -44,3 +44,15 @@ target_link_libraries(simulated-image-source-tests
 )
 
 add_test(NAME simulated-image-source COMMAND simulated-image-source-tests)
+
+qt_add_executable(network-camera-source-tests
+    network_camera_source_test.cpp
+)
+
+target_link_libraries(network-camera-source-tests
+    PRIVATE
+        workpiece-vision
+        Qt6::Test
+)
+
+add_test(NAME network-camera-source COMMAND network-camera-source-tests)

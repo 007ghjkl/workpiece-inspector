@@ -14,6 +14,7 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Test)
+find_package(OpenCV QUIET COMPONENTS core videoio imgproc)
 
 add_library(workpiece-core STATIC
     src/core/DomainModels.cpp
@@ -43,6 +44,8 @@ target_include_directories(workpiece-configuration
 
 add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
+    src/vision/NetworkCameraImageSource.cpp
+    src/vision/NetworkCameraImageSource.h
     src/vision/SimulatedImageSource.cpp
     src/vision/SimulatedImageSource.h
 )
@@ -58,6 +61,20 @@ target_include_directories(workpiece-vision
     PUBLIC
         src
 )
+
+if(OpenCV_FOUND)
+    target_link_libraries(workpiece-vision
+        PRIVATE
+            ${OpenCV_LIBS}
+    )
+    target_include_directories(workpiece-vision
+        PUBLIC
+            ${OpenCV_INCLUDE_DIRS}
+    )
+    target_compile_definitions(workpiece-vision PUBLIC WORKPIECE_HAVE_OPENCV=1)
+else()
+    target_compile_definitions(workpiece-vision PUBLIC WORKPIECE_HAVE_OPENCV=0)
+endif()
 
 qt_add_executable(workpiece-inspector
     src/main.cpp
