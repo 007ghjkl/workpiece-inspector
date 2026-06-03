@@ -1,0 +1,9 @@
+.cache/
+.qtcreator/
+/build/
+/docs/
+/research/
+/specs/
+/tasks/
+/tests/
+/background/
