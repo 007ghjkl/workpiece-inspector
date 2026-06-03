@@ -15,6 +15,16 @@ set(CMAKE_AUTOUIC ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Test)
 
+add_library(workpiece-core STATIC
+    src/core/DomainModels.cpp
+    src/core/DomainModels.h
+)
+
+target_include_directories(workpiece-core
+    PUBLIC
+        src
+)
+
 qt_add_executable(workpiece-inspector
     src/main.cpp
     src/ui/MainWindow.cpp
@@ -23,6 +33,7 @@ qt_add_executable(workpiece-inspector
 
 target_link_libraries(workpiece-inspector
     PRIVATE
+        workpiece-core
         Qt6::Widgets
 )
 
