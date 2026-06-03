@@ -13,7 +13,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Widgets Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets Test)
 
 add_library(workpiece-core STATIC
     src/core/DomainModels.cpp
@@ -21,6 +21,22 @@ add_library(workpiece-core STATIC
 )
 
 target_include_directories(workpiece-core
+    PUBLIC
+        src
+)
+
+add_library(workpiece-configuration STATIC
+    src/configuration/AppConfig.cpp
+    src/configuration/AppConfig.h
+)
+
+target_link_libraries(workpiece-configuration
+    PUBLIC
+        workpiece-core
+        Qt6::Core
+)
+
+target_include_directories(workpiece-configuration
     PUBLIC
         src
 )
@@ -34,6 +50,7 @@ qt_add_executable(workpiece-inspector
 target_link_libraries(workpiece-inspector
     PRIVATE
         workpiece-core
+        workpiece-configuration
         Qt6::Widgets
 )
 

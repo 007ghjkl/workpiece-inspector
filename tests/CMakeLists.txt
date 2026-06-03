@@ -20,3 +20,15 @@ target_link_libraries(domain-models-tests
 )
 
 add_test(NAME domain-models COMMAND domain-models-tests)
+
+qt_add_executable(configuration-tests
+    configuration_test.cpp
+)
+
+target_link_libraries(configuration-tests
+    PRIVATE
+        workpiece-configuration
+        Qt6::Test
+)
+
+add_test(NAME configuration COMMAND configuration-tests)
