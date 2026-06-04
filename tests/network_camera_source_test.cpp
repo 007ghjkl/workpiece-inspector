@@ -21,7 +21,7 @@ private slots:
         source.open(config);
 
         QVERIFY(source.status().state == ImageSourceState::Faulted);
-        QVERIFY(source.status().message.contains(QStringLiteral("URL")));
+        QVERIFY(QString::fromStdString(source.status().message).contains(QStringLiteral("URL")));
 
         const ImageFrame frame = source.capture(FrameRole::Inspection);
         QVERIFY(frame.image.isNull());
@@ -38,7 +38,7 @@ private slots:
         source.open(config);
 
         QVERIFY(source.status().state == ImageSourceState::Faulted);
-        QVERIFY(source.status().message.contains(QStringLiteral("mode")));
+        QVERIFY(QString::fromStdString(source.status().message).contains(QStringLiteral("mode")));
     }
 
     void closeReturnsSourceToClosedState()

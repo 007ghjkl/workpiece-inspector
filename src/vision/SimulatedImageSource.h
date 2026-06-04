@@ -29,7 +29,7 @@ private:
     QImage renderFrame(const Scenario &scenario, FrameRole role);
     void drawDefect(QImage *image, const Scenario &scenario);
 
-    AppConfig config_;
+    SimulationConfig simulationConfig_;
     ImageSourceStatus status_;
     std::mt19937 randomEngine_;
     int nextScenarioId_ = 1;

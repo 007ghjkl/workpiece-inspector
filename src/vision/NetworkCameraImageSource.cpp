@@ -9,7 +9,7 @@
 namespace workpiece {
 
 NetworkCameraImageSource::NetworkCameraImageSource()
-    : status_{ImageSourceState::Closed, QStringLiteral("Network camera source closed.")}
+    : status_{ImageSourceState::Closed, "Network camera source closed."}
 {
 }
 
@@ -23,27 +23,27 @@ void NetworkCameraImageSource::open(const AppConfig &config)
     close();
 
     if (config.imageSource.mode != ImageSourceMode::NetworkCamera) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("Network camera mode is not selected.")};
+        status_ = ImageSourceStatus{ImageSourceState::Faulted, "Network camera mode is not selected."};
         return;
     }
 
     if (!isSupportedUrl(config.imageSource.networkCameraUrl)) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("Network camera URL is invalid or unsupported.")};
+        status_ = ImageSourceStatus{ImageSourceState::Faulted, "Network camera URL is invalid or unsupported."};
         return;
     }
 
     url_ = config.imageSource.networkCameraUrl;
 
 #if WORKPIECE_HAVE_OPENCV
-    status_ = ImageSourceStatus{ImageSourceState::Opening, QStringLiteral("Opening network camera stream.")};
+    status_ = ImageSourceStatus{ImageSourceState::Opening, "Opening network camera stream."};
     if (!capture_.open(url_.toStdString())) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("OpenCV VideoCapture could not open the network camera stream.")};
+        status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV VideoCapture could not open the network camera stream."};
         return;
     }
 
-    status_ = ImageSourceStatus{ImageSourceState::Ready, QStringLiteral("Network camera source ready.")};
+    status_ = ImageSourceStatus{ImageSourceState::Ready, "Network camera source ready."};
 #else
-    status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("OpenCV support is not available in this build.")};
+    status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV support is not available in this build."};
 #endif
 }
 
@@ -56,24 +56,24 @@ void NetworkCameraImageSource::close()
 #endif
 
     url_.clear();
-    status_ = ImageSourceStatus{ImageSourceState::Closed, QStringLiteral("Network camera source closed.")};
+    status_ = ImageSourceStatus{ImageSourceState::Closed, "Network camera source closed."};
 }
 
 ImageFrame NetworkCameraImageSource::capture(FrameRole role)
 {
     if (status_.state != ImageSourceState::Ready) {
         if (status_.state != ImageSourceState::Faulted) {
-            status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("Network camera source is not ready.")};
+            status_ = ImageSourceStatus{ImageSourceState::Faulted, "Network camera source is not ready."};
         }
         return emptyFrame(role);
     }
 
 #if WORKPIECE_HAVE_OPENCV
-    status_ = ImageSourceStatus{ImageSourceState::Capturing, QStringLiteral("Capturing network camera frame.")};
+    status_ = ImageSourceStatus{ImageSourceState::Capturing, "Capturing network camera frame."};
 
     cv::Mat frame;
     if (!capture_.read(frame) || frame.empty()) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("OpenCV VideoCapture failed to read a frame.")};
+        status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV VideoCapture failed to read a frame."};
         return emptyFrame(role);
     }
 
@@ -94,10 +94,10 @@ ImageFrame NetworkCameraImageSource::capture(FrameRole role)
     result.image = image.copy();
     result.metadata = emptyFrame(role).metadata;
 
-    status_ = ImageSourceStatus{ImageSourceState::Ready, QStringLiteral("Network camera frame captured.")};
+    status_ = ImageSourceStatus{ImageSourceState::Ready, "Network camera frame captured."};
     return result;
 #else
-    status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("OpenCV support is not available in this build.")};
+    status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV support is not available in this build."};
     return emptyFrame(role);
 #endif
 }

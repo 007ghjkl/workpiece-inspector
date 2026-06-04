@@ -31,30 +31,30 @@ QString toString(FrameRole role)
 
 void SimulatedImageSource::open(const AppConfig &config)
 {
-    config_ = config;
-    randomEngine_.seed(static_cast<std::mt19937::result_type>(config_.simulation.seed));
+    simulationConfig_ = config.simulation;
+    randomEngine_.seed(static_cast<std::mt19937::result_type>(simulationConfig_.seed));
     nextScenarioId_ = 1;
     currentScenario_.reset();
-    status_ = ImageSourceStatus{ImageSourceState::Ready, QStringLiteral("Simulated image source ready.")};
+    status_ = ImageSourceStatus{ImageSourceState::Ready, "Simulated image source ready."};
 }
 
 void SimulatedImageSource::close()
 {
     currentScenario_.reset();
-    status_ = ImageSourceStatus{ImageSourceState::Closed, QStringLiteral("Simulated image source closed.")};
+    status_ = ImageSourceStatus{ImageSourceState::Closed, "Simulated image source closed."};
 }
 
 ImageFrame SimulatedImageSource::capture(FrameRole role)
 {
     if (status_.state != ImageSourceState::Ready) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, QStringLiteral("Simulated image source is not open.")};
+        status_ = ImageSourceStatus{ImageSourceState::Faulted, "Simulated image source is not open."};
         ImageFrame frame;
         frame.metadata.role = role;
         frame.metadata.sourceType = QStringLiteral("simulated");
         return frame;
     }
 
-    status_ = ImageSourceStatus{ImageSourceState::Capturing, QStringLiteral("Capturing simulated frame.")};
+    status_ = ImageSourceStatus{ImageSourceState::Capturing, "Capturing simulated frame."};
 
     if (role == FrameRole::Positioning || !currentScenario_.has_value()) {
         currentScenario_ = createScenario();
@@ -71,7 +71,7 @@ ImageFrame SimulatedImageSource::capture(FrameRole role)
     frame.metadata.defectScore = currentScenario_->defectScore;
     frame.metadata.hasDefect = currentScenario_->hasDefect;
 
-    status_ = ImageSourceStatus{ImageSourceState::Ready, QStringLiteral("Simulated frame captured.")};
+    status_ = ImageSourceStatus{ImageSourceState::Ready, "Simulated frame captured."};
     return frame;
 }
 
@@ -94,7 +94,7 @@ SimulatedImageSource::Scenario SimulatedImageSource::createScenario()
     scenario.offset.x = offsetDistribution(randomEngine_);
     scenario.offset.y = offsetDistribution(randomEngine_);
     scenario.offset.angle = angleDistribution(randomEngine_);
-    scenario.hasDefect = probabilityDistribution(randomEngine_) < config_.simulation.defectProbability;
+    scenario.hasDefect = probabilityDistribution(randomEngine_) < simulationConfig_.defectProbability;
 
     if (scenario.hasDefect) {
         switch (defectTypeDistribution(randomEngine_)) {
@@ -154,12 +154,12 @@ QImage SimulatedImageSource::renderFrame(const Scenario &scenario, FrameRole rol
 
     painter.restore();
 
-    if (config_.simulation.noiseLevel > 0.0) {
+    if (simulationConfig_.noiseLevel > 0.0) {
         std::mt19937 noiseEngine(static_cast<std::mt19937::result_type>(
-            config_.simulation.seed + scenario.id * 97 + (role == FrameRole::Inspection ? 17 : 3)));
+            simulationConfig_.seed + scenario.id * 97 + (role == FrameRole::Inspection ? 17 : 3)));
         std::uniform_int_distribution<int> noiseDistribution(
-            -static_cast<int>(config_.simulation.noiseLevel),
-            static_cast<int>(config_.simulation.noiseLevel));
+            -static_cast<int>(simulationConfig_.noiseLevel),
+            static_cast<int>(simulationConfig_.noiseLevel));
 
         for (int y = 0; y < image.height(); ++y) {
             auto *scanLine = reinterpret_cast<QRgb *>(image.scanLine(y));
