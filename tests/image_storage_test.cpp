@@ -10,6 +10,15 @@ using namespace workpiece;
 
 namespace {
 
+bool isStoredUnderDirectory(const QString &path, const QString &directoryPath)
+{
+    QDir directory(QFileInfo(directoryPath).absoluteFilePath());
+    const QString relativePath = directory.relativeFilePath(QFileInfo(path).absoluteFilePath());
+    return !relativePath.startsWith(QStringLiteral("../"))
+        && relativePath != QStringLiteral("..")
+        && !QDir::isAbsolutePath(relativePath);
+}
+
 ImageFrame simulatedInspectionFrame()
 {
     AppConfig config = defaultAppConfig();
@@ -112,7 +121,7 @@ private slots:
         QVERIFY(!stored.imageRef.contains(QStringLiteral("..")));
         QVERIFY(!stored.imageRef.contains(QLatin1Char('/')));
         QVERIFY(!stored.imageRef.contains(QLatin1Char('\\')));
-        QVERIFY(stored.absolutePath.startsWith(QFileInfo(tempDir.path()).absoluteFilePath() + QDir::separator()));
+        QVERIFY(isStoredUnderDirectory(stored.absolutePath, tempDir.path()));
     }
 
     void invalidInputsFailClearly()

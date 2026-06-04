@@ -45,9 +45,11 @@ QString frameRoleToken(FrameRole role)
 
 bool isUnderDirectory(const QString &targetPath, const QString &directoryPath)
 {
-    const QString target = QDir::cleanPath(QFileInfo(targetPath).absoluteFilePath());
-    const QString directory = QDir::cleanPath(QFileInfo(directoryPath).absoluteFilePath());
-    return target.startsWith(directory + QDir::separator());
+    QDir directory(QFileInfo(directoryPath).absoluteFilePath());
+    const QString relativePath = directory.relativeFilePath(QFileInfo(targetPath).absoluteFilePath());
+    return relativePath != QStringLiteral("..")
+        && !relativePath.startsWith(QStringLiteral("../"))
+        && !QDir::isAbsolutePath(relativePath);
 }
 
 } // namespace
