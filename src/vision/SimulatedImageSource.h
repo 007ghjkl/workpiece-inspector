@@ -2,7 +2,6 @@
 
 #include "vision/ImageSource.h"
 
-#include <optional>
 #include <random>
 
 namespace workpiece {
@@ -18,7 +17,6 @@ public:
 private:
     struct Scenario {
         int id = 0;
-        QString productId;
         PositionOffset offset;
         DefectType defectType = DefectType::None;
         double defectScore = 0.0;
@@ -28,12 +26,14 @@ private:
     Scenario createScenario();
     QImage renderFrame(const Scenario &scenario, FrameRole role);
     void drawDefect(QImage *image, const Scenario &scenario);
+    QString productIdForScenario(int scenarioId) const;
 
     SimulationConfig simulationConfig_;
-    ImageSourceStatus status_;
+    ImageSourceState state_ = ImageSourceState::Closed;
     std::mt19937 randomEngine_;
     int nextScenarioId_ = 1;
-    std::optional<Scenario> currentScenario_;
+    Scenario currentScenario_;
+    bool hasCurrentScenario_ = false;
 };
 
 } // namespace workpiece

@@ -34,50 +34,66 @@ void SimulatedImageSource::open(const AppConfig &config)
     simulationConfig_ = config.simulation;
     randomEngine_.seed(static_cast<std::mt19937::result_type>(simulationConfig_.seed));
     nextScenarioId_ = 1;
-    currentScenario_.reset();
-    status_ = ImageSourceStatus{ImageSourceState::Ready, "Simulated image source ready."};
+    currentScenario_ = Scenario{};
+    hasCurrentScenario_ = false;
+    state_ = ImageSourceState::Ready;
 }
 
 void SimulatedImageSource::close()
 {
-    currentScenario_.reset();
-    status_ = ImageSourceStatus{ImageSourceState::Closed, "Simulated image source closed."};
+    currentScenario_ = Scenario{};
+    hasCurrentScenario_ = false;
+    state_ = ImageSourceState::Closed;
 }
 
 ImageFrame SimulatedImageSource::capture(FrameRole role)
 {
-    if (status_.state != ImageSourceState::Ready) {
-        status_ = ImageSourceStatus{ImageSourceState::Faulted, "Simulated image source is not open."};
+    if (state_ != ImageSourceState::Ready) {
+        state_ = ImageSourceState::Faulted;
         ImageFrame frame;
         frame.metadata.role = role;
         frame.metadata.sourceType = QStringLiteral("simulated");
         return frame;
     }
 
-    status_ = ImageSourceStatus{ImageSourceState::Capturing, "Capturing simulated frame."};
+    state_ = ImageSourceState::Capturing;
 
-    if (role == FrameRole::Positioning || !currentScenario_.has_value()) {
+    if (role == FrameRole::Positioning || !hasCurrentScenario_) {
         currentScenario_ = createScenario();
+        hasCurrentScenario_ = true;
     }
 
     ImageFrame frame;
-    frame.image = renderFrame(*currentScenario_, role);
-    frame.metadata.scenarioId = currentScenario_->id;
-    frame.metadata.productId = currentScenario_->productId;
+    frame.image = renderFrame(currentScenario_, role);
+    frame.metadata.scenarioId = currentScenario_.id;
+    frame.metadata.productId = productIdForScenario(currentScenario_.id);
     frame.metadata.role = role;
     frame.metadata.sourceType = QStringLiteral("simulated");
-    frame.metadata.offset = currentScenario_->offset;
-    frame.metadata.defectType = currentScenario_->defectType;
-    frame.metadata.defectScore = currentScenario_->defectScore;
-    frame.metadata.hasDefect = currentScenario_->hasDefect;
+    frame.metadata.offset = currentScenario_.offset;
+    frame.metadata.defectType = currentScenario_.defectType;
+    frame.metadata.defectScore = currentScenario_.defectScore;
+    frame.metadata.hasDefect = currentScenario_.hasDefect;
 
-    status_ = ImageSourceStatus{ImageSourceState::Ready, "Simulated frame captured."};
+    state_ = ImageSourceState::Ready;
     return frame;
 }
 
 ImageSourceStatus SimulatedImageSource::status() const
 {
-    return status_;
+    switch (state_) {
+    case ImageSourceState::Closed:
+        return ImageSourceStatus{state_, "Simulated image source closed."};
+    case ImageSourceState::Opening:
+        return ImageSourceStatus{state_, "Simulated image source opening."};
+    case ImageSourceState::Ready:
+        return ImageSourceStatus{state_, "Simulated image source ready."};
+    case ImageSourceState::Capturing:
+        return ImageSourceStatus{state_, "Capturing simulated frame."};
+    case ImageSourceState::Faulted:
+        return ImageSourceStatus{state_, "Simulated image source is not open."};
+    }
+
+    return ImageSourceStatus{ImageSourceState::Faulted, "Simulated image source status is unknown."};
 }
 
 SimulatedImageSource::Scenario SimulatedImageSource::createScenario()
@@ -90,7 +106,6 @@ SimulatedImageSource::Scenario SimulatedImageSource::createScenario()
 
     Scenario scenario;
     scenario.id = nextScenarioId_++;
-    scenario.productId = QStringLiteral("SIM-%1").arg(scenario.id, 6, 10, QLatin1Char('0'));
     scenario.offset.x = offsetDistribution(randomEngine_);
     scenario.offset.y = offsetDistribution(randomEngine_);
     scenario.offset.angle = angleDistribution(randomEngine_);
@@ -174,6 +189,11 @@ QImage SimulatedImageSource::renderFrame(const Scenario &scenario, FrameRole rol
     }
 
     return image;
+}
+
+QString SimulatedImageSource::productIdForScenario(int scenarioId) const
+{
+    return QStringLiteral("SIM-%1").arg(scenarioId, 6, 10, QLatin1Char('0'));
 }
 
 void SimulatedImageSource::drawDefect(QImage *image, const Scenario &scenario)
