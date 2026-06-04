@@ -25,7 +25,7 @@ private:
 
     Scenario createScenario();
     QImage renderFrame(const Scenario &scenario, FrameRole role);
-    void drawDefect(QImage *image, const Scenario &scenario);
+    void drawDefect(QPainter *painter, const Scenario &scenario);
     QString productIdForScenario(int scenarioId) const;
 
     SimulationConfig simulationConfig_;

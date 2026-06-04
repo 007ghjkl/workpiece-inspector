@@ -162,9 +162,7 @@ QImage SimulatedImageSource::renderFrame(const Scenario &scenario, FrameRole rol
     painter.drawLine(QPointF(0.0, -55.0), QPointF(0.0, 55.0));
 
     if (role == FrameRole::Inspection && scenario.hasDefect) {
-        painter.end();
-        drawDefect(&image, scenario);
-        painter.begin(&image);
+        drawDefect(&painter, scenario);
     }
 
     painter.restore();
@@ -196,30 +194,25 @@ QString SimulatedImageSource::productIdForScenario(int scenarioId) const
     return QStringLiteral("SIM-%1").arg(scenarioId, 6, 10, QLatin1Char('0'));
 }
 
-void SimulatedImageSource::drawDefect(QImage *image, const Scenario &scenario)
+void SimulatedImageSource::drawDefect(QPainter *painter, const Scenario &scenario)
 {
-    QPainter painter(image);
-    painter.setRenderHint(QPainter::Antialiasing, true);
-    painter.translate(workpieceCenterWithOffset(scenario.offset));
-    painter.rotate(scenario.offset.angle);
-
     if (scenario.defectType == DefectType::Scratch) {
-        painter.setPen(QPen(QColor(33, 33, 33), 5));
-        painter.drawLine(QPointF(-75.0, -25.0), QPointF(85.0, 30.0));
+        painter->setPen(QPen(QColor(33, 33, 33), 5));
+        painter->drawLine(QPointF(-75.0, -25.0), QPointF(85.0, 30.0));
         return;
     }
 
     if (scenario.defectType == DefectType::Spot) {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(QColor(69, 90, 100));
-        painter.drawEllipse(QPointF(45.0, -18.0), 22.0, 22.0);
+        painter->setPen(Qt::NoPen);
+        painter->setBrush(QColor(69, 90, 100));
+        painter->drawEllipse(QPointF(45.0, -18.0), 22.0, 22.0);
         return;
     }
 
     if (scenario.defectType == DefectType::Deformation) {
-        painter.setPen(QPen(QColor(176, 54, 54), 4));
-        painter.setBrush(Qt::NoBrush);
-        painter.drawEllipse(QPointF(-45.0, 20.0), 36.0, 24.0);
+        painter->setPen(QPen(QColor(176, 54, 54), 4));
+        painter->setBrush(Qt::NoBrush);
+        painter->drawEllipse(QPointF(-45.0, 20.0), 36.0, 24.0);
     }
 }
 
