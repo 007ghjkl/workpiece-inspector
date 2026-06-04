@@ -92,3 +92,15 @@ target_link_libraries(communication-simulation-tests
 )
 
 add_test(NAME communication-simulation COMMAND communication-simulation-tests)
+
+qt_add_executable(persistence-tests
+    persistence_test.cpp
+)
+
+target_link_libraries(persistence-tests
+    PRIVATE
+        workpiece-persistence
+        Qt6::Test
+)
+
+add_test(NAME persistence COMMAND persistence-tests)

@@ -13,7 +13,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Widgets Test)
+find_package(Qt6 REQUIRED COMPONENTS Core Gui Sql Widgets Test)
 find_package(OpenCV QUIET COMPONENTS core videoio imgproc)
 
 add_library(workpiece-core STATIC
@@ -78,6 +78,23 @@ target_include_directories(workpiece-communication
         src
 )
 
+add_library(workpiece-persistence STATIC
+    src/persistence/SQLiteRepository.cpp
+    src/persistence/SQLiteRepository.h
+)
+
+target_link_libraries(workpiece-persistence
+    PUBLIC
+        workpiece-core
+        Qt6::Core
+        Qt6::Sql
+)
+
+target_include_directories(workpiece-persistence
+    PUBLIC
+        src
+)
+
 add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
     src/vision/NetworkCameraImageSource.cpp
@@ -126,6 +143,7 @@ target_link_libraries(workpiece-inspector
         workpiece-communication
         workpiece-configuration
         workpiece-motion
+        workpiece-persistence
         workpiece-vision
         Qt6::Widgets
 )

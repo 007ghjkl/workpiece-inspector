@@ -1,14 +1,15 @@
 # Workpiece Inspector
 
-Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 008 communication simulation.
+Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 009 SQLite persistence.
 
-The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, and high-level communication simulation exist for later modules, but workflow orchestration, persistence, and charts will be added only after their tasks and specs are written.
+The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, and local SQLite persistence exist for later modules, but workflow orchestration and charts will be added only after their tasks and specs are written.
 
 ## Requirements
 
 - CMake 3.21 or newer
 - C++17 compiler
 - Qt 6 with Widgets and Test modules
+- Qt 6 SQLite SQL driver
 
 The current WSL environment has been checked with Qt 6.11.1.
 
