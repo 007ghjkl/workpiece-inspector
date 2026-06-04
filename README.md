@@ -1,8 +1,8 @@
 # Workpiece Inspector
 
-Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 010 image storage.
+Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 011 workflow controller.
 
-The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, and controlled image file storage exist for later modules, but workflow orchestration and charts will be added only after their tasks and specs are written.
+The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, controlled image file storage, and synchronous single-cycle workflow orchestration exist for later modules, but UI integration and charts will be added only after their tasks and specs are written.
 
 ## Requirements
 

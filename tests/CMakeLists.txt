@@ -117,3 +117,15 @@ target_link_libraries(image-storage-tests
 )
 
 add_test(NAME image-storage COMMAND image-storage-tests)
+
+qt_add_executable(workflow-controller-tests
+    workflow_controller_test.cpp
+)
+
+target_link_libraries(workflow-controller-tests
+    PRIVATE
+        workpiece-workflow
+        Qt6::Test
+)
+
+add_test(NAME workflow-controller COMMAND workflow-controller-tests)

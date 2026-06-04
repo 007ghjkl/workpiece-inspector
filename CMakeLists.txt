@@ -148,6 +148,27 @@ else()
     target_compile_definitions(workpiece-vision PUBLIC WORKPIECE_HAVE_OPENCV=0)
 endif()
 
+add_library(workpiece-workflow STATIC
+    src/workflow/WorkflowController.cpp
+    src/workflow/WorkflowController.h
+)
+
+target_link_libraries(workpiece-workflow
+    PUBLIC
+        workpiece-communication
+        workpiece-configuration
+        workpiece-motion
+        workpiece-persistence
+        workpiece-storage
+        workpiece-vision
+        Qt6::Core
+)
+
+target_include_directories(workpiece-workflow
+    PUBLIC
+        src
+)
+
 qt_add_executable(workpiece-inspector
     src/main.cpp
     src/ui/MainWindow.cpp
@@ -163,6 +184,7 @@ target_link_libraries(workpiece-inspector
         workpiece-persistence
         workpiece-storage
         workpiece-vision
+        workpiece-workflow
         Qt6::Widgets
 )
 
