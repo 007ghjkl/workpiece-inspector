@@ -5,7 +5,6 @@
 
 #include <QImage>
 #include <QString>
-#include <string>
 
 namespace workpiece {
 
@@ -32,7 +31,7 @@ struct ImageFrame {
 
 struct ImageSourceStatus {
     ImageSourceState state = ImageSourceState::Closed;
-    std::string message;
+    const char *message = "";
 };
 
 class IImageSource
