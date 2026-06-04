@@ -104,3 +104,16 @@ target_link_libraries(persistence-tests
 )
 
 add_test(NAME persistence COMMAND persistence-tests)
+
+qt_add_executable(image-storage-tests
+    image_storage_test.cpp
+)
+
+target_link_libraries(image-storage-tests
+    PRIVATE
+        workpiece-persistence
+        workpiece-storage
+        Qt6::Test
+)
+
+add_test(NAME image-storage COMMAND image-storage-tests)

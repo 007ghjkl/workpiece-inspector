@@ -95,6 +95,23 @@ target_include_directories(workpiece-persistence
         src
 )
 
+add_library(workpiece-storage STATIC
+    src/storage/ImageStorage.cpp
+    src/storage/ImageStorage.h
+)
+
+target_link_libraries(workpiece-storage
+    PUBLIC
+        workpiece-configuration
+        workpiece-vision
+        Qt6::Gui
+)
+
+target_include_directories(workpiece-storage
+    PUBLIC
+        src
+)
+
 add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
     src/vision/NetworkCameraImageSource.cpp
@@ -144,6 +161,7 @@ target_link_libraries(workpiece-inspector
         workpiece-configuration
         workpiece-motion
         workpiece-persistence
+        workpiece-storage
         workpiece-vision
         Qt6::Widgets
 )
