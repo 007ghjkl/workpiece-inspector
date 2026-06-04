@@ -4,6 +4,8 @@
 
 #include <random>
 
+class QPainter;
+
 namespace workpiece {
 
 class SimulatedImageSource final : public IImageSource

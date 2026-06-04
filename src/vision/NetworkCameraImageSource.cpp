@@ -4,19 +4,24 @@
 
 #if WORKPIECE_HAVE_OPENCV
 #include <opencv2/imgproc.hpp>
+#include <opencv2/videoio.hpp>
 #endif
 
 namespace workpiece {
 
+struct NetworkCameraImageSource::CameraHandle {
+#if WORKPIECE_HAVE_OPENCV
+    cv::VideoCapture capture;
+#endif
+};
+
 NetworkCameraImageSource::NetworkCameraImageSource()
     : status_{ImageSourceState::Closed, "Network camera source closed."}
+    , camera_(std::make_unique<CameraHandle>())
 {
 }
 
-NetworkCameraImageSource::~NetworkCameraImageSource()
-{
-    close();
-}
+NetworkCameraImageSource::~NetworkCameraImageSource() = default;
 
 void NetworkCameraImageSource::open(const AppConfig &config)
 {
@@ -36,7 +41,7 @@ void NetworkCameraImageSource::open(const AppConfig &config)
 
 #if WORKPIECE_HAVE_OPENCV
     status_ = ImageSourceStatus{ImageSourceState::Opening, "Opening network camera stream."};
-    if (!capture_.open(url_.toStdString())) {
+    if (!camera_->capture.open(url_.toStdString())) {
         status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV VideoCapture could not open the network camera stream."};
         return;
     }
@@ -50,8 +55,8 @@ void NetworkCameraImageSource::open(const AppConfig &config)
 void NetworkCameraImageSource::close()
 {
 #if WORKPIECE_HAVE_OPENCV
-    if (capture_.isOpened()) {
-        capture_.release();
+    if (camera_->capture.isOpened()) {
+        camera_->capture.release();
     }
 #endif
 
@@ -72,7 +77,7 @@ ImageFrame NetworkCameraImageSource::capture(FrameRole role)
     status_ = ImageSourceStatus{ImageSourceState::Capturing, "Capturing network camera frame."};
 
     cv::Mat frame;
-    if (!capture_.read(frame) || frame.empty()) {
+    if (!camera_->capture.read(frame) || frame.empty()) {
         status_ = ImageSourceStatus{ImageSourceState::Faulted, "OpenCV VideoCapture failed to read a frame."};
         return emptyFrame(role);
     }

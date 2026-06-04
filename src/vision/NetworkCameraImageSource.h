@@ -2,9 +2,7 @@
 
 #include "vision/ImageSource.h"
 
-#if WORKPIECE_HAVE_OPENCV
-#include <opencv2/videoio.hpp>
-#endif
+#include <memory>
 
 namespace workpiece {
 
@@ -20,15 +18,14 @@ public:
     ImageSourceStatus status() const override;
 
 private:
+    struct CameraHandle;
+
     static bool isSupportedUrl(const QString &url);
     ImageFrame emptyFrame(FrameRole role) const;
 
     ImageSourceStatus status_;
     QString url_;
-
-#if WORKPIECE_HAVE_OPENCV
-    cv::VideoCapture capture_;
-#endif
+    std::unique_ptr<CameraHandle> camera_;
 };
 
 } // namespace workpiece
