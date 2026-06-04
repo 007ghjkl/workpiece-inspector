@@ -46,6 +46,8 @@ add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
     src/vision/NetworkCameraImageSource.cpp
     src/vision/NetworkCameraImageSource.h
+    src/vision/RuleBasedInspector.cpp
+    src/vision/RuleBasedInspector.h
     src/vision/SimulatedImageSource.cpp
     src/vision/SimulatedImageSource.h
 )
