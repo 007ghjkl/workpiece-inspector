@@ -80,3 +80,15 @@ target_link_libraries(motion-simulation-tests
 )
 
 add_test(NAME motion-simulation COMMAND motion-simulation-tests)
+
+qt_add_executable(communication-simulation-tests
+    communication_simulation_test.cpp
+)
+
+target_link_libraries(communication-simulation-tests
+    PRIVATE
+        workpiece-communication
+        Qt6::Test
+)
+
+add_test(NAME communication-simulation COMMAND communication-simulation-tests)

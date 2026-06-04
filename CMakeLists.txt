@@ -60,6 +60,24 @@ target_include_directories(workpiece-motion
         src
 )
 
+add_library(workpiece-communication STATIC
+    src/communication/CommunicationEndpoint.h
+    src/communication/SimulatedCommunicationEndpoint.cpp
+    src/communication/SimulatedCommunicationEndpoint.h
+)
+
+target_link_libraries(workpiece-communication
+    PUBLIC
+        workpiece-core
+        workpiece-configuration
+        Qt6::Core
+)
+
+target_include_directories(workpiece-communication
+    PUBLIC
+        src
+)
+
 add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
     src/vision/NetworkCameraImageSource.cpp
@@ -105,6 +123,7 @@ qt_add_executable(workpiece-inspector
 target_link_libraries(workpiece-inspector
     PRIVATE
         workpiece-core
+        workpiece-communication
         workpiece-configuration
         workpiece-motion
         workpiece-vision
