@@ -160,6 +160,6 @@ private slots:
     }
 };
 
-QTEST_APPLESS_MAIN(RuleBasedInspectorTest)
+QTEST_GUILESS_MAIN(RuleBasedInspectorTest)
 
 #include "rule_based_inspector_test.moc"

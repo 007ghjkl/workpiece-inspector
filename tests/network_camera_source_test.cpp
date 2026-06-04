@@ -79,6 +79,6 @@ private slots:
     }
 };
 
-QTEST_APPLESS_MAIN(NetworkCameraSourceTest)
+QTEST_GUILESS_MAIN(NetworkCameraSourceTest)
 
 #include "network_camera_source_test.moc"
