@@ -27,6 +27,7 @@ private slots:
         QVERIFY(result.config.imageSource.networkCameraUrl.isEmpty());
         QCOMPARE(result.config.motion.maxVelocity, 100.0);
         QCOMPARE(result.config.motion.positionTolerance, 0.01);
+        QVERIFY(!result.config.motion.faultEnabled);
         QVERIFY(result.config.communication.enabled);
         QCOMPARE(result.config.communication.minLatencyMs, 5);
         QCOMPARE(result.config.communication.maxLatencyMs, 50);
@@ -50,7 +51,7 @@ private slots:
             "\"simulation\":{\"seed\":7,\"defectProbability\":0.75,\"noiseLevel\":2.5},"
             "\"inspection\":{\"defectScoreFailThreshold\":42.5,\"minimumPositionConfidence\":0.8},"
             "\"imageSource\":{\"mode\":\"network_camera\",\"networkCameraUrl\":\"rtsp://example.com/stream\"},"
-            "\"motion\":{\"maxVelocity\":250.0,\"positionTolerance\":0.05},"
+            "\"motion\":{\"maxVelocity\":250.0,\"positionTolerance\":0.05,\"faultEnabled\":true},"
             "\"communication\":{\"enabled\":false,\"minLatencyMs\":10,\"maxLatencyMs\":20,\"faultProbability\":0.1},"
             "\"persistence\":{\"databasePath\":\"data/app.sqlite\",\"imageOutputDirectory\":\"data/images\",\"saveImages\":false},"
             "\"ui\":{\"showCharts\":false}"
@@ -70,6 +71,7 @@ private slots:
         QCOMPARE(result.config.imageSource.networkCameraUrl, QStringLiteral("rtsp://example.com/stream"));
         QCOMPARE(result.config.motion.maxVelocity, 250.0);
         QCOMPARE(result.config.motion.positionTolerance, 0.05);
+        QVERIFY(result.config.motion.faultEnabled);
         QVERIFY(!result.config.communication.enabled);
         QCOMPARE(result.config.communication.minLatencyMs, 10);
         QCOMPARE(result.config.communication.maxLatencyMs, 20);

@@ -31,6 +31,7 @@ struct ImageSourceConfig {
 struct MotionSimulationConfig {
     double maxVelocity = 100.0;
     double positionTolerance = 0.01;
+    bool faultEnabled = false;
 };
 
 struct CommunicationSimulationConfig {

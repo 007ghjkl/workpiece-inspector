@@ -253,6 +253,7 @@ ConfigLoadResult loadAppConfig(const QString &path)
     const QJsonObject motion = root.value(QStringLiteral("motion")).toObject();
     config.motion.maxVelocity = readDouble(motion, QStringLiteral("maxVelocity"), config.motion.maxVelocity);
     config.motion.positionTolerance = readDouble(motion, QStringLiteral("positionTolerance"), config.motion.positionTolerance);
+    config.motion.faultEnabled = readBool(motion, QStringLiteral("faultEnabled"), config.motion.faultEnabled);
 
     const QJsonObject communication = root.value(QStringLiteral("communication")).toObject();
     config.communication.enabled = readBool(communication, QStringLiteral("enabled"), config.communication.enabled);

@@ -68,3 +68,15 @@ target_link_libraries(rule-based-inspector-tests
 )
 
 add_test(NAME rule-based-inspector COMMAND rule-based-inspector-tests)
+
+qt_add_executable(motion-simulation-tests
+    motion_simulation_test.cpp
+)
+
+target_link_libraries(motion-simulation-tests
+    PRIVATE
+        workpiece-motion
+        Qt6::Test
+)
+
+add_test(NAME motion-simulation COMMAND motion-simulation-tests)

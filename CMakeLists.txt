@@ -42,6 +42,24 @@ target_include_directories(workpiece-configuration
         src
 )
 
+add_library(workpiece-motion STATIC
+    src/motion/MotionController.h
+    src/motion/SimulatedMotionController.cpp
+    src/motion/SimulatedMotionController.h
+)
+
+target_link_libraries(workpiece-motion
+    PUBLIC
+        workpiece-core
+        workpiece-configuration
+        Qt6::Core
+)
+
+target_include_directories(workpiece-motion
+    PUBLIC
+        src
+)
+
 add_library(workpiece-vision STATIC
     src/vision/ImageSource.h
     src/vision/NetworkCameraImageSource.cpp
@@ -88,6 +106,7 @@ target_link_libraries(workpiece-inspector
     PRIVATE
         workpiece-core
         workpiece-configuration
+        workpiece-motion
         workpiece-vision
         Qt6::Widgets
 )
