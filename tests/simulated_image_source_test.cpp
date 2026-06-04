@@ -143,6 +143,6 @@ private slots:
     }
 };
 
-QTEST_APPLESS_MAIN(SimulatedImageSourceTest)
+QTEST_GUILESS_MAIN(SimulatedImageSourceTest)
 
 #include "simulated_image_source_test.moc"
