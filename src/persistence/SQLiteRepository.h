@@ -47,10 +47,10 @@ struct FaultLog {
 };
 
 struct InspectionHistoryFilter {
-    QString productId;
+    char productId[128] = {};
     InspectionDecision result = InspectionDecision::Unknown;
-    QString fromTimestampIso;
-    QString toTimestampIso;
+    char fromTimestampIso[32] = {};
+    char toTimestampIso[32] = {};
     int limit = 100;
 };
 
@@ -92,5 +92,8 @@ private:
     mutable QString lastError_;
     bool initialized_ = false;
 };
+
+void setProductIdFilter(InspectionHistoryFilter &filter, const QString &productId);
+void setTimestampRangeFilter(InspectionHistoryFilter &filter, const QString &fromTimestampIso, const QString &toTimestampIso);
 
 } // namespace workpiece

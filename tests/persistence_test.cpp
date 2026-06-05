@@ -93,13 +93,13 @@ private slots:
         QCOMPARE(failed.first().defectScore, 82.5);
 
         InspectionHistoryFilter productFilter;
-        productFilter.productId = QStringLiteral("P-001");
+        setProductIdFilter(productFilter, QStringLiteral("P-001"));
         const QList<InspectionRecord> p001 = repository.queryInspectionHistory(productFilter);
         QCOMPARE(p001.size(), 1);
         QCOMPARE(p001.first().productId, QStringLiteral("P-001"));
 
         InspectionHistoryFilter combinedFilter;
-        combinedFilter.productId = QStringLiteral("P-002");
+        setProductIdFilter(combinedFilter, QStringLiteral("P-002"));
         combinedFilter.result = InspectionDecision::Fail;
         const QList<InspectionRecord> p002Failed = repository.queryInspectionHistory(combinedFilter);
         QCOMPARE(p002Failed.size(), 1);
@@ -126,8 +126,9 @@ private slots:
         QVERIFY(repository.saveInspectionRecord(makeRecordAt(QStringLiteral("NEW"), InspectionDecision::Pass, QStringLiteral("2026-06-04T03:00:00.000Z"))).success);
 
         InspectionHistoryFilter filter;
-        filter.fromTimestampIso = QStringLiteral("2026-06-04T01:30:00.000Z");
-        filter.toTimestampIso = QStringLiteral("2026-06-04T02:30:00.000Z");
+        setTimestampRangeFilter(filter,
+                                QStringLiteral("2026-06-04T01:30:00.000Z"),
+                                QStringLiteral("2026-06-04T02:30:00.000Z"));
 
         const QList<InspectionRecord> records = repository.queryInspectionHistory(filter);
         QCOMPARE(records.size(), 1);

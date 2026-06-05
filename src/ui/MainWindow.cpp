@@ -434,7 +434,7 @@ void MainWindow::renderSummary(const workpiece::QualitySummary &summary)
 workpiece::InspectionHistoryFilter MainWindow::historyFilter() const
 {
     workpiece::InspectionHistoryFilter filter;
-    filter.productId = productFilterEdit_->text().trimmed();
+    workpiece::setProductIdFilter(filter, productFilterEdit_->text());
     filter.result = static_cast<workpiece::InspectionDecision>(resultFilterCombo_->currentData().toInt());
     filter.limit = 100;
     return filter;

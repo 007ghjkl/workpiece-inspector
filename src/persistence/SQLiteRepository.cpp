@@ -6,6 +6,7 @@
 #include <QVariant>
 
 #include <atomic>
+#include <cstdio>
 
 namespace workpiece {
 namespace {
@@ -97,6 +98,16 @@ FaultSeverity faultSeverityFromString(const QString &value)
         return FaultSeverity::Error;
     }
     return FaultSeverity::Info;
+}
+
+void copyFilterText(char *destination, std::size_t size, const QString &value)
+{
+    if (size == 0) {
+        return;
+    }
+
+    const QByteArray bytes = value.trimmed().toUtf8();
+    std::snprintf(destination, size, "%s", bytes.constData());
 }
 
 } // namespace
@@ -309,16 +320,20 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
         "FROM inspection_records");
 
     QStringList conditions;
-    if (!filter.productId.trimmed().isEmpty()) {
+    const QString productId = QString::fromUtf8(filter.productId).trimmed();
+    const QString fromTimestampIso = QString::fromUtf8(filter.fromTimestampIso).trimmed();
+    const QString toTimestampIso = QString::fromUtf8(filter.toTimestampIso).trimmed();
+
+    if (!productId.isEmpty()) {
         conditions.push_back(QStringLiteral("product_id = ?"));
     }
     if (filter.result != InspectionDecision::Unknown) {
         conditions.push_back(QStringLiteral("result = ?"));
     }
-    if (!filter.fromTimestampIso.trimmed().isEmpty()) {
+    if (!fromTimestampIso.isEmpty()) {
         conditions.push_back(QStringLiteral("timestamp >= ?"));
     }
-    if (!filter.toTimestampIso.trimmed().isEmpty()) {
+    if (!toTimestampIso.isEmpty()) {
         conditions.push_back(QStringLiteral("timestamp <= ?"));
     }
     if (!conditions.isEmpty()) {
@@ -328,17 +343,17 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
 
     QSqlQuery query(database_);
     query.prepare(sql);
-    if (!filter.productId.trimmed().isEmpty()) {
-        query.addBindValue(filter.productId);
+    if (!productId.isEmpty()) {
+        query.addBindValue(productId);
     }
     if (filter.result != InspectionDecision::Unknown) {
         query.addBindValue(decisionToString(filter.result));
     }
-    if (!filter.fromTimestampIso.trimmed().isEmpty()) {
-        query.addBindValue(filter.fromTimestampIso.trimmed());
+    if (!fromTimestampIso.isEmpty()) {
+        query.addBindValue(fromTimestampIso);
     }
-    if (!filter.toTimestampIso.trimmed().isEmpty()) {
-        query.addBindValue(filter.toTimestampIso.trimmed());
+    if (!toTimestampIso.isEmpty()) {
+        query.addBindValue(toTimestampIso);
     }
     query.addBindValue(filter.limit > 0 ? filter.limit : 100);
 
@@ -492,6 +507,17 @@ bool SQLiteRepository::ensureReady(const QString &operation) const
         return false;
     }
     return true;
+}
+
+void setProductIdFilter(InspectionHistoryFilter &filter, const QString &productId)
+{
+    copyFilterText(filter.productId, sizeof(filter.productId), productId);
+}
+
+void setTimestampRangeFilter(InspectionHistoryFilter &filter, const QString &fromTimestampIso, const QString &toTimestampIso)
+{
+    copyFilterText(filter.fromTimestampIso, sizeof(filter.fromTimestampIso), fromTimestampIso);
+    copyFilterText(filter.toTimestampIso, sizeof(filter.toTimestampIso), toTimestampIso);
 }
 
 } // namespace workpiece
