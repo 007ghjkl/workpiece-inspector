@@ -315,10 +315,10 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
     if (filter.result != InspectionDecision::Unknown) {
         conditions.push_back(QStringLiteral("result = ?"));
     }
-    if (filter.fromTimestamp.isValid()) {
+    if (!filter.fromTimestampIso.trimmed().isEmpty()) {
         conditions.push_back(QStringLiteral("timestamp >= ?"));
     }
-    if (filter.toTimestamp.isValid()) {
+    if (!filter.toTimestampIso.trimmed().isEmpty()) {
         conditions.push_back(QStringLiteral("timestamp <= ?"));
     }
     if (!conditions.isEmpty()) {
@@ -334,11 +334,11 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
     if (filter.result != InspectionDecision::Unknown) {
         query.addBindValue(decisionToString(filter.result));
     }
-    if (filter.fromTimestamp.isValid()) {
-        query.addBindValue(dateTimeToString(filter.fromTimestamp));
+    if (!filter.fromTimestampIso.trimmed().isEmpty()) {
+        query.addBindValue(filter.fromTimestampIso.trimmed());
     }
-    if (filter.toTimestamp.isValid()) {
-        query.addBindValue(dateTimeToString(filter.toTimestamp));
+    if (!filter.toTimestampIso.trimmed().isEmpty()) {
+        query.addBindValue(filter.toTimestampIso.trimmed());
     }
     query.addBindValue(filter.limit > 0 ? filter.limit : 100);
 

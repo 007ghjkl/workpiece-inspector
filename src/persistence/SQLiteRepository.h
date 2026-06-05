@@ -49,8 +49,8 @@ struct FaultLog {
 struct InspectionHistoryFilter {
     QString productId;
     InspectionDecision result = InspectionDecision::Unknown;
-    QDateTime fromTimestamp;
-    QDateTime toTimestamp;
+    QString fromTimestampIso;
+    QString toTimestampIso;
     int limit = 100;
 };
 

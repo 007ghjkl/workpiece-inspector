@@ -126,8 +126,8 @@ private slots:
         QVERIFY(repository.saveInspectionRecord(makeRecordAt(QStringLiteral("NEW"), InspectionDecision::Pass, QStringLiteral("2026-06-04T03:00:00.000Z"))).success);
 
         InspectionHistoryFilter filter;
-        filter.fromTimestamp = QDateTime::fromString(QStringLiteral("2026-06-04T01:30:00.000Z"), Qt::ISODateWithMs);
-        filter.toTimestamp = QDateTime::fromString(QStringLiteral("2026-06-04T02:30:00.000Z"), Qt::ISODateWithMs);
+        filter.fromTimestampIso = QStringLiteral("2026-06-04T01:30:00.000Z");
+        filter.toTimestampIso = QStringLiteral("2026-06-04T02:30:00.000Z");
 
         const QList<InspectionRecord> records = repository.queryInspectionHistory(filter);
         QCOMPARE(records.size(), 1);
