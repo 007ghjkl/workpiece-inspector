@@ -47,6 +47,8 @@ struct FaultLog {
 };
 
 struct InspectionHistoryFilter {
+    InspectionHistoryFilter();
+
     char productId[128] = {};
     InspectionDecision result = InspectionDecision::Unknown;
     char fromTimestampIso[32] = {};
@@ -75,7 +77,8 @@ public:
     PersistenceResult saveOperatorLog(const OperatorLog &log);
     PersistenceResult saveFaultLog(const FaultLog &log);
 
-    QList<InspectionRecord> queryInspectionHistory(const InspectionHistoryFilter &filter = {}) const;
+    QList<InspectionRecord> queryInspectionHistory() const;
+    QList<InspectionRecord> queryInspectionHistory(const InspectionHistoryFilter &filter) const;
     QList<OperatorLog> queryOperatorLogs(int limit = 100) const;
     QList<FaultLog> queryFaultLogs(int limit = 100) const;
     QualitySummary queryQualitySummary() const;

@@ -6,6 +6,7 @@
 #include <QVariant>
 
 #include <atomic>
+#include <cstring>
 #include <cstdio>
 
 namespace workpiece {
@@ -111,6 +112,13 @@ void copyFilterText(char *destination, std::size_t size, const QString &value)
 }
 
 } // namespace
+
+InspectionHistoryFilter::InspectionHistoryFilter()
+{
+    std::memset(productId, 0, sizeof(productId));
+    std::memset(fromTimestampIso, 0, sizeof(fromTimestampIso));
+    std::memset(toTimestampIso, 0, sizeof(toTimestampIso));
+}
 
 SQLiteRepository::SQLiteRepository()
     : connectionName_(QStringLiteral("workpiece_repository_%1").arg(++connectionCounter))
@@ -304,6 +312,12 @@ PersistenceResult SQLiteRepository::saveFaultLog(const FaultLog &log)
     }
 
     return {true, QStringLiteral("Fault log saved.")};
+}
+
+QList<InspectionRecord> SQLiteRepository::queryInspectionHistory() const
+{
+    const InspectionHistoryFilter filter;
+    return queryInspectionHistory(filter);
 }
 
 QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const InspectionHistoryFilter &filter) const
