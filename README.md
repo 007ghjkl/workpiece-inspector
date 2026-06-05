@@ -1,14 +1,15 @@
 # Workpiece Inspector
 
-Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 012 main Qt Widgets UI.
+Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 013 history and charts UI.
 
-The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, controlled image file storage, synchronous single-cycle workflow orchestration, and a main Qt Widgets HMI exist for later modules. History charts will be added only after their task and spec are written.
+The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, controlled image file storage, synchronous single-cycle workflow orchestration, a main Qt Widgets HMI, and persisted history/statistics display exist for later modules.
 
 ## Requirements
 
 - CMake 3.21 or newer
 - C++17 compiler
 - Qt 6 with Widgets and Test modules
+- Qt 6 Charts module
 - Qt 6 SQLite SQL driver
 
 The current WSL environment has been checked with Qt 6.11.1.
@@ -46,6 +47,7 @@ If running inside WSL without a display server, the executable may build success
 3. Click `Start Cycle`.
 4. Confirm the station state changes to `completed`.
 5. Confirm the image area, latest result, motion status, communication status, and message area update.
+6. Confirm the history table, total/pass/fail counts, pass rate, and pass/fail chart update.
 
 ## Windows Notes
 

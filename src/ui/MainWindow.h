@@ -4,9 +4,16 @@
 #include "workflow/WorkflowController.h"
 
 #include <QLabel>
+#include <QLineEdit>
 #include <QMainWindow>
 #include <QPushButton>
+#include <QComboBox>
 #include <QString>
+#include <QTableWidget>
+
+QT_BEGIN_NAMESPACE
+class QChartView;
+QT_END_NAMESPACE
 
 #include <memory>
 
@@ -21,6 +28,7 @@ public:
 
 private slots:
     void runSingleCycle();
+    void applyHistoryFilters();
 
 private:
     struct Runtime;
@@ -29,6 +37,10 @@ private:
     bool initializeRuntime();
     void renderSnapshot(const workpiece::WorkflowSnapshot &snapshot);
     void renderResult(const workpiece::WorkflowRunResult &result);
+    void refreshHistory();
+    void renderHistory(const QList<workpiece::InspectionRecord> &records);
+    void renderSummary(const workpiece::QualitySummary &summary);
+    workpiece::InspectionHistoryFilter historyFilter() const;
     void setMessage(const QString &message);
     void updateImage(const QImage &image);
     void setCycleControlsEnabled(bool enabled);
@@ -49,4 +61,14 @@ private:
     QLabel *offsetLabel_ = nullptr;
     QLabel *motionLabel_ = nullptr;
     QLabel *communicationLabel_ = nullptr;
+    QLineEdit *productFilterEdit_ = nullptr;
+    QComboBox *resultFilterCombo_ = nullptr;
+    QPushButton *applyFilterButton_ = nullptr;
+    QTableWidget *historyTable_ = nullptr;
+    QLabel *historyEmptyLabel_ = nullptr;
+    QLabel *totalCountLabel_ = nullptr;
+    QLabel *passCountLabel_ = nullptr;
+    QLabel *failCountLabel_ = nullptr;
+    QLabel *passRateLabel_ = nullptr;
+    QChartView *qualityChartView_ = nullptr;
 };

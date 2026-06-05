@@ -30,6 +30,13 @@ InspectionRecord makeRecord(const QString &productId, InspectionDecision decisio
     return record;
 }
 
+InspectionRecord makeRecordAt(const QString &productId, InspectionDecision decision, const QString &timestamp)
+{
+    InspectionRecord record = makeRecord(productId, decision);
+    record.timestamp = QDateTime::fromString(timestamp, Qt::ISODateWithMs);
+    return record;
+}
+
 } // namespace
 
 class PersistenceTest : public QObject
@@ -91,11 +98,40 @@ private slots:
         QCOMPARE(p001.size(), 1);
         QCOMPARE(p001.first().productId, QStringLiteral("P-001"));
 
+        InspectionHistoryFilter combinedFilter;
+        combinedFilter.productId = QStringLiteral("P-002");
+        combinedFilter.result = InspectionDecision::Fail;
+        const QList<InspectionRecord> p002Failed = repository.queryInspectionHistory(combinedFilter);
+        QCOMPARE(p002Failed.size(), 1);
+        QCOMPARE(p002Failed.first().productId, QStringLiteral("P-002"));
+
         const QualitySummary summary = repository.queryQualitySummary();
         QCOMPARE(summary.totalCount, 3);
         QCOMPARE(summary.passCount, 2);
         QCOMPARE(summary.failCount, 1);
         QCOMPARE(summary.passRate, 2.0 / 3.0);
+    }
+
+    void inspectionHistoryCanBeFilteredByTimestamp()
+    {
+        QTemporaryDir directory;
+        QVERIFY(directory.isValid());
+
+        SQLiteRepository repository;
+        QVERIFY(repository.open(directory.filePath(QStringLiteral("time-filter.sqlite"))).success);
+        QVERIFY(repository.initialize().success);
+
+        QVERIFY(repository.saveInspectionRecord(makeRecordAt(QStringLiteral("OLD"), InspectionDecision::Pass, QStringLiteral("2026-06-04T01:00:00.000Z"))).success);
+        QVERIFY(repository.saveInspectionRecord(makeRecordAt(QStringLiteral("MID"), InspectionDecision::Fail, QStringLiteral("2026-06-04T02:00:00.000Z"))).success);
+        QVERIFY(repository.saveInspectionRecord(makeRecordAt(QStringLiteral("NEW"), InspectionDecision::Pass, QStringLiteral("2026-06-04T03:00:00.000Z"))).success);
+
+        InspectionHistoryFilter filter;
+        filter.fromTimestamp = QDateTime::fromString(QStringLiteral("2026-06-04T01:30:00.000Z"), Qt::ISODateWithMs);
+        filter.toTimestamp = QDateTime::fromString(QStringLiteral("2026-06-04T02:30:00.000Z"), Qt::ISODateWithMs);
+
+        const QList<InspectionRecord> records = repository.queryInspectionHistory(filter);
+        QCOMPARE(records.size(), 1);
+        QCOMPARE(records.first().productId, QStringLiteral("MID"));
     }
 
     void operatorAndFaultLogsCanBeInsertedAndQueried()

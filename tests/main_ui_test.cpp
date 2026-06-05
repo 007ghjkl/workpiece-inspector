@@ -1,7 +1,11 @@
 #include <QLabel>
 #include <QPushButton>
+#include <QComboBox>
+#include <QLineEdit>
 #include <QTemporaryDir>
 #include <QTest>
+#include <QTableWidget>
+#include <QChartView>
 
 #include "configuration/AppConfig.h"
 #include "ui/MainWindow.h"
@@ -32,6 +36,8 @@ private slots:
 
         QCOMPARE(labelByName(window, "stationStateLabel")->text(), QStringLiteral("idle"));
         QCOMPARE(labelByName(window, "modeLabel")->text(), QStringLiteral("SIMULATION MODE"));
+        QCOMPARE(labelByName(window, "totalCountLabel")->text(), QStringLiteral("0"));
+        QVERIFY(labelByName(window, "historyEmptyLabel")->isVisible());
 
         auto *button = window.findChild<QPushButton *>(QStringLiteral("startCycleButton"));
         QVERIFY(button != nullptr);
@@ -59,6 +65,7 @@ private slots:
         QVERIFY(button->isEnabled());
 
         QTest::mouseClick(button, Qt::LeftButton);
+        QTest::mouseClick(button, Qt::LeftButton);
 
         QCOMPARE(labelByName(window, "stationStateLabel")->text(), QStringLiteral("completed"));
         QCOMPARE(labelByName(window, "modeLabel")->text(), QStringLiteral("SIMULATION MODE"));
@@ -70,6 +77,42 @@ private slots:
 
         auto *imageLabel = labelByName(window, "currentImageLabel");
         QVERIFY(!imageLabel->pixmap().isNull());
+
+        auto *historyTable = window.findChild<QTableWidget *>(QStringLiteral("historyTable"));
+        QVERIFY(historyTable != nullptr);
+        QCOMPARE(historyTable->rowCount(), 2);
+        QCOMPARE(labelByName(window, "totalCountLabel")->text(), QStringLiteral("2"));
+        QCOMPARE(labelByName(window, "passCountLabel")->text(), QStringLiteral("2"));
+        QCOMPARE(labelByName(window, "failCountLabel")->text(), QStringLiteral("0"));
+        QCOMPARE(labelByName(window, "passRateLabel")->text(), QStringLiteral("100.0%"));
+        QVERIFY(!labelByName(window, "historyEmptyLabel")->isVisible());
+
+        auto *chartView = window.findChild<QChartView *>(QStringLiteral("qualityChartView"));
+        QVERIFY(chartView != nullptr);
+        QVERIFY(chartView->chart() != nullptr);
+
+        auto *productFilter = window.findChild<QLineEdit *>(QStringLiteral("productFilterEdit"));
+        auto *resultFilter = window.findChild<QComboBox *>(QStringLiteral("resultFilterCombo"));
+        auto *applyFilter = window.findChild<QPushButton *>(QStringLiteral("applyHistoryFilterButton"));
+        QVERIFY(productFilter != nullptr);
+        QVERIFY(resultFilter != nullptr);
+        QVERIFY(applyFilter != nullptr);
+
+        productFilter->setText(QStringLiteral("SIM-000001"));
+        resultFilter->setCurrentText(QStringLiteral("All"));
+        QTest::mouseClick(applyFilter, Qt::LeftButton);
+        QCOMPARE(historyTable->rowCount(), 2);
+        QCOMPARE(historyTable->item(0, 1)->text(), QStringLiteral("SIM-000001"));
+
+        productFilter->clear();
+        resultFilter->setCurrentText(QStringLiteral("Pass"));
+        QTest::mouseClick(applyFilter, Qt::LeftButton);
+        QCOMPARE(historyTable->rowCount(), 2);
+
+        productFilter->clear();
+        resultFilter->setCurrentText(QStringLiteral("Fail"));
+        QTest::mouseClick(applyFilter, Qt::LeftButton);
+        QCOMPARE(historyTable->rowCount(), 0);
     }
 };
 

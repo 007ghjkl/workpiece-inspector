@@ -8,11 +8,15 @@
 #include "vision/SimulatedImageSource.h"
 
 #include <QApplication>
+#include <QChart>
+#include <QChartView>
 #include <QDateTime>
 #include <QFrame>
 #include <QGridLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
+#include <QHeaderView>
+#include <QPieSeries>
 #include <QPixmap>
 #include <QSizePolicy>
 #include <QVBoxLayout>
@@ -49,6 +53,13 @@ QString communicationText(const workpiece::CommunicationState &state)
     return QStringLiteral("%1  %2")
         .arg(QString::fromStdString(workpiece::toString(state.status)))
         .arg(QString::fromStdString(state.diagnosticSummary));
+}
+
+QString timestampText(const QDateTime &timestamp)
+{
+    return timestamp.isValid()
+        ? timestamp.toLocalTime().toString(QStringLiteral("yyyy-MM-dd HH:mm:ss"))
+        : QStringLiteral("-");
 }
 
 QLabel *makeValueLabel(const QString &objectName)
@@ -109,8 +120,14 @@ void MainWindow::runSingleCycle()
 
     const workpiece::WorkflowRunResult result = runtime_->workflow->runSingleCycle();
     renderResult(result);
+    refreshHistory();
 
     setCycleControlsEnabled(true);
+}
+
+void MainWindow::applyHistoryFilters()
+{
+    refreshHistory();
 }
 
 void MainWindow::buildUi()
@@ -186,6 +203,78 @@ void MainWindow::buildUi()
     content->addWidget(sidePanel, 2);
     root->addLayout(content, 1);
 
+    auto *historyBox = new QGroupBox(QStringLiteral("Inspection History"));
+    auto *historyLayout = new QVBoxLayout(historyBox);
+
+    auto *filterLayout = new QHBoxLayout;
+    productFilterEdit_ = new QLineEdit;
+    productFilterEdit_->setObjectName(QStringLiteral("productFilterEdit"));
+    productFilterEdit_->setPlaceholderText(QStringLiteral("Product id"));
+    connect(productFilterEdit_, &QLineEdit::returnPressed, this, &MainWindow::applyHistoryFilters);
+
+    resultFilterCombo_ = new QComboBox;
+    resultFilterCombo_->setObjectName(QStringLiteral("resultFilterCombo"));
+    resultFilterCombo_->addItem(QStringLiteral("All"), static_cast<int>(workpiece::InspectionDecision::Unknown));
+    resultFilterCombo_->addItem(QStringLiteral("Pass"), static_cast<int>(workpiece::InspectionDecision::Pass));
+    resultFilterCombo_->addItem(QStringLiteral("Fail"), static_cast<int>(workpiece::InspectionDecision::Fail));
+
+    applyFilterButton_ = new QPushButton(QStringLiteral("Apply"));
+    applyFilterButton_->setObjectName(QStringLiteral("applyHistoryFilterButton"));
+    connect(applyFilterButton_, &QPushButton::clicked, this, &MainWindow::applyHistoryFilters);
+
+    totalCountLabel_ = makeValueLabel(QStringLiteral("totalCountLabel"));
+    passCountLabel_ = makeValueLabel(QStringLiteral("passCountLabel"));
+    failCountLabel_ = makeValueLabel(QStringLiteral("failCountLabel"));
+    passRateLabel_ = makeValueLabel(QStringLiteral("passRateLabel"));
+
+    filterLayout->addWidget(new QLabel(QStringLiteral("Product")));
+    filterLayout->addWidget(productFilterEdit_);
+    filterLayout->addWidget(new QLabel(QStringLiteral("Result")));
+    filterLayout->addWidget(resultFilterCombo_);
+    filterLayout->addWidget(applyFilterButton_);
+    filterLayout->addStretch();
+    filterLayout->addWidget(new QLabel(QStringLiteral("Total")));
+    filterLayout->addWidget(totalCountLabel_);
+    filterLayout->addWidget(new QLabel(QStringLiteral("Pass")));
+    filterLayout->addWidget(passCountLabel_);
+    filterLayout->addWidget(new QLabel(QStringLiteral("Fail")));
+    filterLayout->addWidget(failCountLabel_);
+    filterLayout->addWidget(new QLabel(QStringLiteral("Pass Rate")));
+    filterLayout->addWidget(passRateLabel_);
+    historyLayout->addLayout(filterLayout);
+
+    auto *historyContent = new QHBoxLayout;
+    historyTable_ = new QTableWidget;
+    historyTable_->setObjectName(QStringLiteral("historyTable"));
+    historyTable_->setColumnCount(7);
+    historyTable_->setHorizontalHeaderLabels({
+        QStringLiteral("Time"),
+        QStringLiteral("Product"),
+        QStringLiteral("Result"),
+        QStringLiteral("Defect"),
+        QStringLiteral("Score"),
+        QStringLiteral("Image Ref"),
+        QStringLiteral("Cycle ms")
+    });
+    historyTable_->horizontalHeader()->setStretchLastSection(true);
+    historyTable_->verticalHeader()->setVisible(false);
+    historyTable_->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    historyTable_->setSelectionBehavior(QAbstractItemView::SelectRows);
+
+    qualityChartView_ = new QChartView;
+    qualityChartView_->setObjectName(QStringLiteral("qualityChartView"));
+    qualityChartView_->setMinimumSize(220, 160);
+    qualityChartView_->setRenderHint(QPainter::Antialiasing);
+
+    historyContent->addWidget(historyTable_, 4);
+    historyContent->addWidget(qualityChartView_, 2);
+    historyLayout->addLayout(historyContent);
+
+    historyEmptyLabel_ = makeValueLabel(QStringLiteral("historyEmptyLabel"));
+    historyEmptyLabel_->setText(QStringLiteral("No inspection records."));
+    historyLayout->addWidget(historyEmptyLabel_);
+    root->addWidget(historyBox, 1);
+
     messageLabel_ = makeValueLabel(QStringLiteral("messageLabel"));
     messageLabel_->setFrameShape(QFrame::StyledPanel);
     messageLabel_->setMinimumHeight(44);
@@ -201,6 +290,8 @@ void MainWindow::buildUi()
     offsetLabel_->setText(QStringLiteral("x 0.00  y 0.00  angle 0.00"));
     motionLabel_->setText(motionText(workpiece::MotionState{}));
     communicationLabel_->setText(communicationText(workpiece::CommunicationState{}));
+    renderSummary(workpiece::QualitySummary{});
+    renderHistory({});
     setMessage(QStringLiteral("Ready."));
 }
 
@@ -241,6 +332,7 @@ bool MainWindow::initializeRuntime()
     });
 
     setCycleControlsEnabled(true);
+    refreshHistory();
     return true;
 }
 
@@ -281,6 +373,71 @@ void MainWindow::renderResult(const workpiece::WorkflowRunResult &result)
         defectLabel_->setText(defectText(result.inspectionRecord.defectType));
         scoreLabel_->setText(QString::number(result.inspectionRecord.defectScore, 'f', 2));
     }
+}
+
+void MainWindow::refreshHistory()
+{
+    if (!runtime_) {
+        renderHistory({});
+        renderSummary(workpiece::QualitySummary{});
+        return;
+    }
+
+    const QList<workpiece::InspectionRecord> records = runtime_->repository.queryInspectionHistory(historyFilter());
+    if (records.isEmpty() && !runtime_->repository.lastError().isEmpty()) {
+        setMessage(runtime_->repository.lastError());
+    }
+    renderHistory(records);
+    renderSummary(runtime_->repository.queryQualitySummary());
+}
+
+void MainWindow::renderHistory(const QList<workpiece::InspectionRecord> &records)
+{
+    historyTable_->setRowCount(records.size());
+    for (int row = 0; row < records.size(); ++row) {
+        const workpiece::InspectionRecord &record = records.at(row);
+        historyTable_->setItem(row, 0, new QTableWidgetItem(timestampText(record.timestamp)));
+        historyTable_->setItem(row, 1, new QTableWidgetItem(record.productId));
+        historyTable_->setItem(row, 2, new QTableWidgetItem(decisionText(record.result)));
+        historyTable_->setItem(row, 3, new QTableWidgetItem(defectText(record.defectType)));
+        historyTable_->setItem(row, 4, new QTableWidgetItem(QString::number(record.defectScore, 'f', 2)));
+        historyTable_->setItem(row, 5, new QTableWidgetItem(record.imageRef));
+        historyTable_->setItem(row, 6, new QTableWidgetItem(QString::number(record.cycleTimeMs)));
+    }
+    historyTable_->resizeColumnsToContents();
+    historyEmptyLabel_->setVisible(records.isEmpty());
+}
+
+void MainWindow::renderSummary(const workpiece::QualitySummary &summary)
+{
+    totalCountLabel_->setText(QString::number(summary.totalCount));
+    passCountLabel_->setText(QString::number(summary.passCount));
+    failCountLabel_->setText(QString::number(summary.failCount));
+    passRateLabel_->setText(QStringLiteral("%1%").arg(summary.passRate * 100.0, 0, 'f', 1));
+
+    auto *series = new QPieSeries;
+    if (summary.totalCount == 0) {
+        series->append(QStringLiteral("No Data"), 1);
+    } else {
+        series->append(QStringLiteral("Pass"), summary.passCount);
+        series->append(QStringLiteral("Fail"), summary.failCount);
+    }
+
+    auto *chart = new QChart;
+    chart->addSeries(series);
+    chart->setTitle(QStringLiteral("Pass / Fail"));
+    chart->legend()->setVisible(true);
+    chart->legend()->setAlignment(Qt::AlignBottom);
+    qualityChartView_->setChart(chart);
+}
+
+workpiece::InspectionHistoryFilter MainWindow::historyFilter() const
+{
+    workpiece::InspectionHistoryFilter filter;
+    filter.productId = productFilterEdit_->text().trimmed();
+    filter.result = static_cast<workpiece::InspectionDecision>(resultFilterCombo_->currentData().toInt());
+    filter.limit = 100;
+    return filter;
 }
 
 void MainWindow::setMessage(const QString &message)

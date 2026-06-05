@@ -13,7 +13,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Gui Sql Widgets Test)
+find_package(Qt6 REQUIRED COMPONENTS Charts Core Gui Sql Widgets Test)
 find_package(OpenCV QUIET COMPONENTS core videoio imgproc)
 
 add_library(workpiece-core STATIC
@@ -184,6 +184,7 @@ target_link_libraries(workpiece-ui
         workpiece-storage
         workpiece-vision
         workpiece-workflow
+        Qt6::Charts
         Qt6::Widgets
 )
 

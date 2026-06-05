@@ -315,6 +315,12 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
     if (filter.result != InspectionDecision::Unknown) {
         conditions.push_back(QStringLiteral("result = ?"));
     }
+    if (filter.fromTimestamp.isValid()) {
+        conditions.push_back(QStringLiteral("timestamp >= ?"));
+    }
+    if (filter.toTimestamp.isValid()) {
+        conditions.push_back(QStringLiteral("timestamp <= ?"));
+    }
     if (!conditions.isEmpty()) {
         sql += QStringLiteral(" WHERE ") + conditions.join(QStringLiteral(" AND "));
     }
@@ -327,6 +333,12 @@ QList<InspectionRecord> SQLiteRepository::queryInspectionHistory(const Inspectio
     }
     if (filter.result != InspectionDecision::Unknown) {
         query.addBindValue(decisionToString(filter.result));
+    }
+    if (filter.fromTimestamp.isValid()) {
+        query.addBindValue(dateTimeToString(filter.fromTimestamp));
+    }
+    if (filter.toTimestamp.isValid()) {
+        query.addBindValue(dateTimeToString(filter.toTimestamp));
     }
     query.addBindValue(filter.limit > 0 ? filter.limit : 100);
 

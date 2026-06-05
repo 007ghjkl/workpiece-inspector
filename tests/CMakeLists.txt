@@ -137,6 +137,7 @@ qt_add_executable(main-ui-tests
 target_link_libraries(main-ui-tests
     PRIVATE
         workpiece-ui
+        Qt6::Charts
         Qt6::Test
         Qt6::Widgets
 )
