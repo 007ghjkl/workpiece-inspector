@@ -24,6 +24,20 @@ class MainUiTest : public QObject
     Q_OBJECT
 
 private slots:
+    void defaultMainWindowLaunchesBeforeRuntimeInitialization()
+    {
+        MainWindow window;
+        window.show();
+        QVERIFY(QTest::qWaitForWindowExposed(&window));
+
+        QCOMPARE(labelByName(window, "stationStateLabel")->text(), QStringLiteral("idle"));
+        QCOMPARE(labelByName(window, "modeLabel")->text(), QStringLiteral("SIMULATION MODE"));
+
+        auto *button = window.findChild<QPushButton *>(QStringLiteral("startCycleButton"));
+        QVERIFY(button != nullptr);
+        QVERIFY(button->isEnabled());
+    }
+
     void mainWindowRunsSingleCycle()
     {
         QTemporaryDir tempDir;

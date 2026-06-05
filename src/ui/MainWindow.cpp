@@ -76,17 +76,16 @@ MainWindow::MainWindow(const workpiece::AppConfig &config, QWidget *parent)
     resize(1180, 760);
 
     buildUi();
-    initializeRuntime();
 }
 
 void MainWindow::runSingleCycle()
 {
-    if (!workflow_) {
-        setMessage(QStringLiteral("Workflow is not available."));
+    setCycleControlsEnabled(false);
+
+    if (!workflow_ && !initializeRuntime()) {
         return;
     }
 
-    setCycleControlsEnabled(false);
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
     const workpiece::WorkflowRunResult result = workflow_->runSingleCycle();
@@ -186,7 +185,7 @@ void MainWindow::buildUi()
     setMessage(QStringLiteral("Ready."));
 }
 
-void MainWindow::initializeRuntime()
+bool MainWindow::initializeRuntime()
 {
     const workpiece::ConfigLoadResult validated = workpiece::validateAppConfig(config_);
     config_ = validated.config;
@@ -197,14 +196,14 @@ void MainWindow::initializeRuntime()
     if (!opened.success) {
         setMessage(opened.message);
         setCycleControlsEnabled(false);
-        return;
+        return false;
     }
 
     const workpiece::PersistenceResult initialized = repository_.initialize();
     if (!initialized.success) {
         setMessage(initialized.message);
         setCycleControlsEnabled(false);
-        return;
+        return false;
     }
 
     workflow_ = std::make_unique<workpiece::WorkflowController>(config_,
@@ -219,6 +218,7 @@ void MainWindow::initializeRuntime()
     });
 
     setCycleControlsEnabled(true);
+    return true;
 }
 
 void MainWindow::renderSnapshot(const workpiece::WorkflowSnapshot &snapshot)

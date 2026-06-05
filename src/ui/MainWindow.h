@@ -29,7 +29,7 @@ private slots:
 
 private:
     void buildUi();
-    void initializeRuntime();
+    bool initializeRuntime();
     void renderSnapshot(const workpiece::WorkflowSnapshot &snapshot);
     void renderResult(const workpiece::WorkflowRunResult &result);
     void setMessage(const QString &message);
