@@ -169,14 +169,13 @@ target_include_directories(workpiece-workflow
         src
 )
 
-qt_add_executable(workpiece-inspector
-    src/main.cpp
+add_library(workpiece-ui STATIC
     src/ui/MainWindow.cpp
     src/ui/MainWindow.h
 )
 
-target_link_libraries(workpiece-inspector
-    PRIVATE
+target_link_libraries(workpiece-ui
+    PUBLIC
         workpiece-core
         workpiece-communication
         workpiece-configuration
@@ -186,6 +185,20 @@ target_link_libraries(workpiece-inspector
         workpiece-vision
         workpiece-workflow
         Qt6::Widgets
+)
+
+target_include_directories(workpiece-ui
+    PUBLIC
+        src
+)
+
+qt_add_executable(workpiece-inspector
+    src/main.cpp
+)
+
+target_link_libraries(workpiece-inspector
+    PRIVATE
+        workpiece-ui
 )
 
 target_include_directories(workpiece-inspector

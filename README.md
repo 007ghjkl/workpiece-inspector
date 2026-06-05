@@ -1,8 +1,8 @@
 # Workpiece Inspector
 
-Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 011 workflow controller.
+Workpiece Inspector is a C++/Qt upper-computer portfolio project for a simulated workpiece inspection cell. The current stage includes Task 001 project skeleton through Task 012 main Qt Widgets UI.
 
-The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, controlled image file storage, and synchronous single-cycle workflow orchestration exist for later modules, but UI integration and charts will be added only after their tasks and specs are written.
+The application is intentionally minimal at this stage. Shared domain models, validated configuration, deterministic generated workpiece images, an optional OpenCV-backed network camera adapter, metadata-based rule inspection, deterministic motion simulation, high-level communication simulation, local SQLite persistence, controlled image file storage, synchronous single-cycle workflow orchestration, and a main Qt Widgets HMI exist for later modules. History charts will be added only after their task and spec are written.
 
 ## Requirements
 
@@ -38,6 +38,14 @@ ctest --test-dir build --output-on-failure
 ```
 
 If running inside WSL without a display server, the executable may build successfully but not open a visible window. Automated tests for Task 001 do not require a display server.
+
+## Manual UI Test
+
+1. Launch `./build/workpiece-inspector`.
+2. Confirm the top bar shows `SIMULATION MODE`.
+3. Click `Start Cycle`.
+4. Confirm the station state changes to `completed`.
+5. Confirm the image area, latest result, motion status, communication status, and message area update.
 
 ## Windows Notes
 

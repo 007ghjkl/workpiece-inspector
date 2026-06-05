@@ -129,3 +129,19 @@ target_link_libraries(workflow-controller-tests
 )
 
 add_test(NAME workflow-controller COMMAND workflow-controller-tests)
+
+qt_add_executable(main-ui-tests
+    main_ui_test.cpp
+)
+
+target_link_libraries(main-ui-tests
+    PRIVATE
+        workpiece-ui
+        Qt6::Test
+        Qt6::Widgets
+)
+
+add_test(NAME main-ui COMMAND main-ui-tests)
+set_tests_properties(main-ui PROPERTIES
+    ENVIRONMENT "QT_QPA_PLATFORM=offscreen"
+)
