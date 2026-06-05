@@ -1,5 +1,12 @@
 #include "ui/MainWindow.h"
 
+#include "communication/SimulatedCommunicationEndpoint.h"
+#include "motion/SimulatedMotionController.h"
+#include "persistence/SQLiteRepository.h"
+#include "storage/ImageStorage.h"
+#include "vision/RuleBasedInspector.h"
+#include "vision/SimulatedImageSource.h"
+
 #include <QApplication>
 #include <QDateTime>
 #include <QFrame>
@@ -63,6 +70,16 @@ void addRow(QGridLayout *layout, int row, const QString &name, QLabel *value)
 
 } // namespace
 
+struct MainWindow::Runtime {
+    workpiece::SimulatedImageSource imageSource;
+    workpiece::RuleBasedInspector inspector;
+    workpiece::SimulatedMotionController motionController;
+    workpiece::SimulatedCommunicationEndpoint communicationEndpoint;
+    workpiece::ImageStorage imageStorage;
+    workpiece::SQLiteRepository repository;
+    std::unique_ptr<workpiece::WorkflowController> workflow;
+};
+
 MainWindow::MainWindow(QWidget *parent)
     : MainWindow(workpiece::defaultAppConfig(), parent)
 {
@@ -78,17 +95,19 @@ MainWindow::MainWindow(const workpiece::AppConfig &config, QWidget *parent)
     buildUi();
 }
 
+MainWindow::~MainWindow() = default;
+
 void MainWindow::runSingleCycle()
 {
     setCycleControlsEnabled(false);
 
-    if (!workflow_ && !initializeRuntime()) {
+    if ((!runtime_ || !runtime_->workflow) && !initializeRuntime()) {
         return;
     }
 
     qApp->processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    const workpiece::WorkflowRunResult result = workflow_->runSingleCycle();
+    const workpiece::WorkflowRunResult result = runtime_->workflow->runSingleCycle();
     renderResult(result);
 
     setCycleControlsEnabled(true);
@@ -187,33 +206,37 @@ void MainWindow::buildUi()
 
 bool MainWindow::initializeRuntime()
 {
+    runtime_ = std::make_unique<Runtime>();
+
     const workpiece::ConfigLoadResult validated = workpiece::validateAppConfig(config_);
     config_ = validated.config;
     config_.imageSource.mode = workpiece::ImageSourceMode::Simulated;
     config_.imageSource.networkCameraUrl.clear();
 
-    workpiece::PersistenceResult opened = repository_.open(config_.persistence.databasePath);
+    workpiece::PersistenceResult opened = runtime_->repository.open(config_.persistence.databasePath);
     if (!opened.success) {
         setMessage(opened.message);
         setCycleControlsEnabled(false);
+        runtime_.reset();
         return false;
     }
 
-    const workpiece::PersistenceResult initialized = repository_.initialize();
+    const workpiece::PersistenceResult initialized = runtime_->repository.initialize();
     if (!initialized.success) {
         setMessage(initialized.message);
         setCycleControlsEnabled(false);
+        runtime_.reset();
         return false;
     }
 
-    workflow_ = std::make_unique<workpiece::WorkflowController>(config_,
-                                                                imageSource_,
-                                                                inspector_,
-                                                                motionController_,
-                                                                communicationEndpoint_,
-                                                                imageStorage_,
-                                                                repository_);
-    workflow_->addObserver([this](const workpiece::WorkflowSnapshot &snapshot) {
+    runtime_->workflow = std::make_unique<workpiece::WorkflowController>(config_,
+                                                                         runtime_->imageSource,
+                                                                         runtime_->inspector,
+                                                                         runtime_->motionController,
+                                                                         runtime_->communicationEndpoint,
+                                                                         runtime_->imageStorage,
+                                                                         runtime_->repository);
+    runtime_->workflow->addObserver([this](const workpiece::WorkflowSnapshot &snapshot) {
         renderSnapshot(snapshot);
     });
 

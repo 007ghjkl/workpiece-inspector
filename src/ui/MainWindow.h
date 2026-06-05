@@ -1,12 +1,6 @@
 #pragma once
 
-#include "communication/SimulatedCommunicationEndpoint.h"
 #include "configuration/AppConfig.h"
-#include "motion/SimulatedMotionController.h"
-#include "persistence/SQLiteRepository.h"
-#include "storage/ImageStorage.h"
-#include "vision/RuleBasedInspector.h"
-#include "vision/SimulatedImageSource.h"
 #include "workflow/WorkflowController.h"
 
 #include <QLabel>
@@ -23,11 +17,14 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     explicit MainWindow(const workpiece::AppConfig &config, QWidget *parent = nullptr);
+    ~MainWindow() override;
 
 private slots:
     void runSingleCycle();
 
 private:
+    struct Runtime;
+
     void buildUi();
     bool initializeRuntime();
     void renderSnapshot(const workpiece::WorkflowSnapshot &snapshot);
@@ -37,13 +34,7 @@ private:
     void setCycleControlsEnabled(bool enabled);
 
     workpiece::AppConfig config_;
-    workpiece::SimulatedImageSource imageSource_;
-    workpiece::RuleBasedInspector inspector_;
-    workpiece::SimulatedMotionController motionController_;
-    workpiece::SimulatedCommunicationEndpoint communicationEndpoint_;
-    workpiece::ImageStorage imageStorage_;
-    workpiece::SQLiteRepository repository_;
-    std::unique_ptr<workpiece::WorkflowController> workflow_;
+    std::unique_ptr<Runtime> runtime_;
 
     QPushButton *startButton_ = nullptr;
     QLabel *modeLabel_ = nullptr;
